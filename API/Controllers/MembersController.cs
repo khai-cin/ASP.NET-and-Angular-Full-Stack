@@ -2,14 +2,14 @@
 
 using API.Data;
 using API.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")] // localhost:5001/api/members
-    [ApiController]
-    public class MembersController(AppDbContext context) : ControllerBase
+   
+    public class MembersController(AppDbContext context) : BaseAPIController
     {
 
         // async vs sync
@@ -23,6 +23,8 @@ namespace API.Controllers
             return members;
         }
 
+        // [Authorize] means all endpoints in this controller require authorization
+        [Authorize]
         [HttpGet("{id}")] // locaalhost:5001/api/members/jon-id
         public async Task<ActionResult<AppUser>> GetMember(string id)
         {
