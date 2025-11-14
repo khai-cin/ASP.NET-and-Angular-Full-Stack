@@ -1,10 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
+import { Nav } from "../layout/nav/nav";
+import { AccountService } from '../core/services/account-service';
+import { Home } from "../features/home/home";
+import { User } from '../types/user';
+import { Register } from '../features/account/register/register';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [Nav, Home],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -13,11 +18,14 @@ export class App implements OnInit {
   // design pattern used to implement IoC (Inversion of Control), 
   // allowing the creation of dependent objects outside of a class and providing those objects to a class in different ways.
 
+
+
   // mew way of doing dependency injection
+  private accountService = inject(AccountService);
   private http = inject(HttpClient);
   protected readonly title = 'Dating App';
   // signal - a signal is a reactive primitive that holds a value and notifies subscribers when the value changes.
-  protected members = signal(<any>[]);
+  protected users = signal(<User[]>[]);
 
   // contructor injection - the dependencies are provided through a class constructor.
   // old way of doing dependency injection
@@ -36,12 +44,21 @@ export class App implements OnInit {
       //   complete: () => console.log('Request completed') // automatically unsubscribes after completion
       // })
 
-      this.members.set(await this.getMembers());
+      this.users.set(await this.getMembers());
+      this.setCurrentUser();
+  }
+
+  setCurrentUser() {
+    const userString = localStorage.getItem('user');
+    if (!userString) return;
+
+    const user = JSON.parse(userString);
+    this.accountService.currentUser.set(user);
   }
 
   async getMembers() {
     try {
-      return lastValueFrom(this.http.get('https://localhost:5001/api/members'));
+      return lastValueFrom(this.http.get<User[]>('https://localhost:5001/api/members'));
     }
     catch (error) {
       console.log(error);
